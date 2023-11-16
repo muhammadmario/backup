@@ -2,7 +2,7 @@ import React from "react";
 
 export default function Footer({ todos }) {
   const totalItem = todos?.length;
-  const checkedItem = todos?.filter((item) => item.status == 1).length;
+  const checkedItem = todos?.filter((item) => item.completed == 1).length;
   const persentage = Math.round((checkedItem / totalItem) * 100);
   return (
     <footer className="bg-slate-500 flex justify-center items-center sticky bottom-0 p-6">

@@ -1,7 +1,7 @@
 import React from "react";
 import { useState } from "react";
 
-function Todo({ id, title, handleDelete, status, handleCheck, handleEdit }) {
+function Todo({ id, title, handleDelete, completed, handleCheck, handleEdit }) {
   const [isEditing, setEditing] = useState(false);
   const [newTitle, setNewTitle] = useState(title);
 
@@ -21,9 +21,9 @@ function Todo({ id, title, handleDelete, status, handleCheck, handleEdit }) {
         <input
           id="default-checkbox"
           type="checkbox"
-          checked={status == 1}
+          checked={completed == 1}
           className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500"
-          onChange={() => handleCheck(id, status)}
+          onChange={() => handleCheck(id, completed)}
         />
         {isEditing ? (
           <input
@@ -35,7 +35,7 @@ function Todo({ id, title, handleDelete, status, handleCheck, handleEdit }) {
         ) : (
           <span
             className={`text-white  font-bold ${
-              status == 1 ? "line-through" : ""
+              completed == 1 ? "line-through" : ""
             }`}
           >
             {title}

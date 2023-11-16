@@ -1,7 +1,8 @@
 import React from "react";
 import { useState } from "react";
+import ClipLoader from "react-spinners/ClipLoader";
 
-export default function AddForm({ handleSubmit }) {
+export default function AddForm({ handleSubmit, isLoading }) {
   const [title, setTitle] = useState("");
 
   const onSubmit = (e) => {
@@ -49,9 +50,10 @@ export default function AddForm({ handleSubmit }) {
         />
         <button
           type="submit"
+          disabled={isLoading}
           className="text-white absolute end-2.5 bottom-2.5 bg-blue-700 hover:bg-blue-800 focus:ring-4 focus:outline-none focus:ring-blue-300 font-medium rounded-lg text-sm px-4 py-2"
         >
-          Add
+          {isLoading ? <ClipLoader size={20} color="#fff" /> : "Add"}
         </button>
       </div>
     </form>

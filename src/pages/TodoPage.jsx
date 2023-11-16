@@ -5,12 +5,16 @@ import Header from "../components/Header";
 import ListTodo from "../components/ListTodo";
 import { useEffect, useState } from "react";
 import ClipLoader from "react-spinners/ClipLoader";
+import { ToastContainer, toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { confirmAlert } from "react-confirm-alert";
+import "react-confirm-alert/src/react-confirm-alert.css";
 
 export default function TodoPage() {
   const [todos, setTodos] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
 
-  const fetchData = async () => {
+  const getData = async () => {
     try {
       setIsLoading(true);
       const response = await fetch("http://127.0.0.1:8000/api/todos");
@@ -22,32 +26,13 @@ export default function TodoPage() {
       setIsLoading(false);
     }
   };
-  const handleDelete = async (id) => {
-    try {
-      setIsLoading(true);
-      const response = await fetch(`http://127.0.0.1:8000/api/todos/${id}`, {
-        method: "DELETE",
-        headers: {
-          "Content-Type": "application/json",
-        },
-      });
 
-      if (!response.ok) {
-        throw new Error("Network response was not ok");
-      }
-
-      const updatedData = todos.filter((item) => item.id !== id);
-      setTodos(updatedData);
-    } catch (error) {
-      console.error("Error deleting data:", error.message);
-    } finally {
-      setIsLoading(false);
-    }
-  };
   const handleCheck = async (id, currentStatus) => {
     try {
       const updatedTodos = todos.map((todo) =>
-        todo.id === id ? { ...todo, status: currentStatus === 1 ? 0 : 1 } : todo
+        todo.id === id
+          ? { ...todo, completed: currentStatus === 1 ? 0 : 1 }
+          : todo
       );
       setTodos(updatedTodos);
 
@@ -58,7 +43,7 @@ export default function TodoPage() {
         },
         body: JSON.stringify({
           title: updatedTodos.find((todo) => todo.id === id).title,
-          status: currentStatus === 1 ? 0 : 1,
+          completed: currentStatus === 1 ? 0 : 1,
         }),
       });
 
@@ -69,6 +54,7 @@ export default function TodoPage() {
       console.error("Error updating data:", error.message);
     }
   };
+
   const handleSubmit = async (title) => {
     try {
       setIsLoading(true);
@@ -79,7 +65,7 @@ export default function TodoPage() {
         },
         body: JSON.stringify({
           title: title,
-          status: 0,
+          completed: 0,
         }),
       });
 
@@ -91,6 +77,10 @@ export default function TodoPage() {
       const newTodoData = await newTodo.data;
 
       setTodos((prevTodos) => [...prevTodos, newTodoData]);
+
+      toast.success("Todo added successfully", {
+        position: "bottom-center",
+      });
     } catch {
       console.error("Error updating data:", error.message);
     } finally {
@@ -100,7 +90,6 @@ export default function TodoPage() {
 
   const handleEdit = async (id, newTitle) => {
     try {
-      setIsLoading(true);
       const response = await fetch(`http://127.0.0.1:8000/api/todos/${id}`, {
         method: "PUT",
         headers: {
@@ -119,21 +108,68 @@ export default function TodoPage() {
         item.id === id ? { ...item, title: newTitle } : item
       );
       setTodos(updatedData);
+      toast.success("Todo edited successfully", {
+        position: "bottom-center",
+      });
     } catch (error) {
       console.error("Error updating data:", error.message);
-    } finally {
-      setIsLoading(false);
     }
   };
 
+  const handleDelete = async (id) => {
+    confirmAlert({
+      title: "Are you sure?",
+      message: "Are you sure to delete this todo.",
+      buttons: [
+        {
+          label: "Yes",
+          onClick: async () => {
+            try {
+              setIsLoading(true);
+              const response = await fetch(
+                `http://127.0.0.1:8000/api/todos/${id}`,
+                {
+                  method: "DELETE",
+                  headers: {
+                    "Content-Type": "application/json",
+                  },
+                }
+              );
+
+              if (!response.ok) {
+                throw new Error("Network response was not ok");
+              }
+
+              const updatedData = todos.filter((item) => item.id !== id);
+              setTodos(updatedData);
+              toast.success("Todo deleted", {
+                position: "bottom-center",
+              });
+            } catch (error) {
+              console.error("Error deleting data:", error.message);
+            } finally {
+              setIsLoading(false);
+            }
+          },
+        },
+        {
+          label: "No",
+          onClick: () => {
+            return;
+          },
+        },
+      ],
+    });
+  };
+
   useEffect(() => {
-    fetchData();
+    getData();
   }, []);
 
   return (
     <>
       <Header />
-      <AddForm handleSubmit={handleSubmit} />
+      <AddForm handleSubmit={handleSubmit} isLoading={isLoading} />
       {isLoading ? (
         <div className="min-h-[80vh] flex flex-col justify-center items-center">
           <ClipLoader color="#fff" />
@@ -144,8 +180,11 @@ export default function TodoPage() {
           handleCheck={handleCheck}
           handleDelete={handleDelete}
           handleEdit={handleEdit}
+          setTodos={setTodos}
         />
       )}
+
+      <ToastContainer />
       <Footer todos={todos} />
     </>
   );
